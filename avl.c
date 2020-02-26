@@ -105,10 +105,16 @@ struct AVLnode * _balance(struct AVLnode * current)
 {
 	int cbf = bf(current);
 
-
-
        /* FIX ME */
+	   if(cbf < -1) {
 
+
+
+	   } else if(cbf > 1) {
+
+		   
+
+	   }
 
 	setHeight(current);
 	return current;
