@@ -103,16 +103,22 @@ struct AVLnode * rotateRight(struct AVLnode * current)
 /* balance subtree of current node */
 struct AVLnode * _balance(struct AVLnode * current)
 {
-	int cbf = bf(current);
+	int cbf = bf(current), drotation = 0;
 
        /* FIX ME */
 	   if(cbf < -1) {
 
+			drotation = _balance(current->left);
+			if(drotation > 0) current->left = rotateLeft(current->left);
 
+			return rotateRight(current);
 
 	   } else if(cbf > 1) {
 
-		   
+		   drotation = _balance(current->right);
+		   if(drotation < 0) current->right = rotateRight(current->right);
+
+		   return rotateLeft(current);
 
 	   }
 
@@ -124,10 +130,23 @@ struct AVLnode * _balance(struct AVLnode * current)
 struct AVLnode * AVLnodeAdd(struct	AVLnode * current, TYPE newValue)
 {
 
+    /* FIX ME */
 
-     /* FIX ME */
+	struct AVLNode* newNode;
 
+	if(!current) {
 
+		newNode = (struct AVLnode*)malloc(sizeof(struct AVLnode));
+		return newNode;
+
+	} else {
+
+		if(LT(newValue, current->val)) current->left = AVLnodeAdd(current->left, newValue);
+		else current->right = AVLnodeAdd(current->right, newValue);
+
+	}
+
+	return _balance(current);
 
 }
 

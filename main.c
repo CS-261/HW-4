@@ -75,7 +75,7 @@ Finds the minimum-cost path in an AVL tree
 int FindMinPath(struct AVLTree *tree, TYPE *path)
 {
                /* FIX ME */
-        
+    return 0;
 
 }
 
@@ -90,9 +90,18 @@ void printBreadthFirstTree(struct AVLTree *tree)
 {
    
     /* FIX ME */
-
+	int h = tree->root->height, i;
+	for(i = 0; i < h; i++) printLevel(tree->root, i);
 
 }
 
+void printLevel(struct AVLnode* node, int level) {
 
+	if(!node) return;
+	else if(level == 1) printf("%i ", node->val);
+	else {
+		printLevel(node->left, level - 1);
+		printLevel(node->right, level - 1);
+	}
 
+}
