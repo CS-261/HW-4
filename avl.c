@@ -69,6 +69,7 @@ void setHeight (struct AVLnode * current)
 /* return balance factor value */
 int bf(struct AVLnode * current)
 {
+	printf("%i %i\n", h(current->right), h(current->left));
 	return h(current->right) - h(current->left);
 }
 
@@ -91,11 +92,11 @@ struct AVLnode * rotateRight(struct AVLnode * current)
 {
 	struct AVLnode * newtop = current->left;
 
-        /* FIX ME */
-		current->left = newtop->right;
-		newtop->right = current;
-		setHeight(current);
-		setHeight(newtop);
+	/* FIX ME */
+	current->left = newtop->right;
+	newtop->right = current;
+	setHeight(current);
+	setHeight(newtop);
 
 	return newtop;
 }
@@ -103,24 +104,28 @@ struct AVLnode * rotateRight(struct AVLnode * current)
 /* balance subtree of current node */
 struct AVLnode * _balance(struct AVLnode * current)
 {
+
 	int cbf = bf(current), drotation = 0;
 
+	printf("%i\n" ,cbf);
+
        /* FIX ME */
-	   if(cbf < -1) {
+	if(cbf < -1) {
 
-			drotation = _balance(current->left);
-			if(drotation > 0) current->left = rotateLeft(current->left);
+		drotation = bf(current->left);
 
-			return rotateRight(current);
+		if(drotation > 0) current->left = rotateLeft(current->left);
 
-	   } else if(cbf > 1) {
+		return rotateRight(current);
 
-		   drotation = _balance(current->right);
-		   if(drotation < 0) current->right = rotateRight(current->right);
+	} else if(cbf > 1) {
 
-		   return rotateLeft(current);
+		drotation = bf(current->right);
+		if(drotation < 0) current->right = rotateRight(current->right);
 
-	   }
+		return rotateLeft(current);
+
+	}
 
 	setHeight(current);
 	return current;
@@ -132,20 +137,28 @@ struct AVLnode * AVLnodeAdd(struct	AVLnode * current, TYPE newValue)
 
     /* FIX ME */
 
-	struct AVLNode* newNode;
+	struct AVLnode* newNode;
 
 	if(!current) {
 
 		newNode = (struct AVLnode*)malloc(sizeof(struct AVLnode));
+		newNode->val = newValue;
+		newNode->height = 0;
 		return newNode;
 
 	} else {
 
-		if(LT(newValue, current->val)) current->left = AVLnodeAdd(current->left, newValue);
-		else current->right = AVLnodeAdd(current->right, newValue);
+		if(LT(newValue, current->val)) {
+			current->left = AVLnodeAdd(current->left, newValue);
+			setHeight(current->left);
+		} else {
+			current->right = AVLnodeAdd(current->right, newValue);
+			setHeight(current->right);
+		} 
 
 	}
 
+	setHeight(current);
 	return _balance(current);
 
 }

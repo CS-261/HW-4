@@ -14,7 +14,7 @@
 #endif
 
 struct AVLnode {
-	TYPE         val;
+	TYPE val;
 	struct AVLnode *left;
 	struct AVLnode *right;
 	int height;
@@ -22,7 +22,7 @@ struct AVLnode {
 
 struct AVLTree {
 	struct AVLnode *root;
-	int          cnt;
+	int cnt;
 };
 
 /* the public interface */
