@@ -69,12 +69,11 @@ void setHeight (struct AVLnode * current)
 /* return balance factor value */
 int bf(struct AVLnode * current)
 {
-	printf("%i %i\n", h(current->right), h(current->left));
 	return h(current->right) - h(current->left);
 }
 
 /* left-rotate subtree of current node */
-struct AVLnode * rotateLeft(struct AVLnode * current)
+struct AVLnode * rotateLeft(struct AVLnode* current)
 {
 	struct AVLnode * newtop = current->right;
 
@@ -106,8 +105,6 @@ struct AVLnode * _balance(struct AVLnode * current)
 {
 
 	int cbf = bf(current), drotation = 0;
-
-	printf("%i\n" ,cbf);
 
        /* FIX ME */
 	if(cbf < -1) {
@@ -142,7 +139,9 @@ struct AVLnode * AVLnodeAdd(struct	AVLnode * current, TYPE newValue)
 	if(!current) {
 
 		newNode = (struct AVLnode*)malloc(sizeof(struct AVLnode));
+		assert(newNode);
 		newNode->val = newValue;
+		newNode->left = newNode->right = 0;
 		newNode->height = 0;
 		return newNode;
 
@@ -150,10 +149,8 @@ struct AVLnode * AVLnodeAdd(struct	AVLnode * current, TYPE newValue)
 
 		if(LT(newValue, current->val)) {
 			current->left = AVLnodeAdd(current->left, newValue);
-			setHeight(current->left);
 		} else {
 			current->right = AVLnodeAdd(current->right, newValue);
-			setHeight(current->right);
 		} 
 
 	}
@@ -166,7 +163,7 @@ struct AVLnode * AVLnodeAdd(struct	AVLnode * current, TYPE newValue)
 /* add val to AVL tree */
 void addAVLTree(struct AVLTree *tree, TYPE val)
 {
-	tree->root = AVLnodeAdd(tree->root, val);	
+	tree->root = AVLnodeAdd(tree->root, val);
 	tree->cnt++;
 }
 

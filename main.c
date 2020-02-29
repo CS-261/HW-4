@@ -7,7 +7,7 @@
 
 int FindMinPath(struct AVLTree *tree, TYPE *path);
 void printBreadthFirstTree(struct AVLTree *tree);
-
+void printLevel(struct AVLnode* node, int level);
 
 /* -----------------------
 The main function
@@ -30,9 +30,10 @@ int main(int argc, char** argv) {
 
 	/* Read input file and add numbers to the AVL tree */
 	while((fscanf(file, "%i", &num)) != EOF){
-		addAVLTree(tree, num);	
-		printf("%i\n", tree->root->height);	
+		printf("%i ", num);
+		addAVLTree(tree, num);
 	}
+	printf("\n%i\n", tree->cnt);
 	/* Close the file  */
 	fclose(file);
 	
@@ -75,8 +76,19 @@ Finds the minimum-cost path in an AVL tree
 */
 int FindMinPath(struct AVLTree *tree, TYPE *path)
 {
-               /* FIX ME */
-	return 0;
+    /* FIX ME */
+	int s = 0, i = 0;
+	struct AVLnode* current = tree->root, * prev = 0;
+	while(current) {
+		path[i++] = current->val;
+		printf("%i ", current->val);
+		prev = current;
+		if(current->left) current = current->left;
+		else current = current->right;
+		if(prev) s += abs(prev->val - current->val);
+	}
+	
+	return s;
 
 }
 
@@ -91,9 +103,21 @@ void printBreadthFirstTree(struct AVLTree *tree)
 {
    
     /* FIX ME */
-	printf("oof");
+	int i, h = tree->root->height;
+	for(i = 0; i < h; i++) {
+		printLevel(tree->root, i);
+		printf("\n");
+	}
 
 }
 
+void printLevel(struct AVLnode* node, int level) {
 
+	if(!node) return;
+	if(level == 1) printf("%i ", node->val);
+	else if(level > 1) {
+		printLevel(node->left, level - 1);
+		printLevel(node->right, level - 1);
+	}
 
+}
