@@ -7,7 +7,8 @@
 
 int FindMinPath(struct AVLTree *tree, TYPE *path);
 void printBreadthFirstTree(struct AVLTree *tree);
-void printLevel(struct AVLnode* node, int level);
+int printLevel(struct AVLnode* node, int level);
+double slope(struct AVLnode* parent, struct AVLnode* child);
 
 /* -----------------------
 The main function
@@ -33,7 +34,6 @@ int main(int argc, char** argv) {
 		printf("%i ", num);
 		addAVLTree(tree, num);
 	}
-	printf("\n%i\n", tree->cnt);
 	/* Close the file  */
 	fclose(file);
 	
@@ -60,8 +60,6 @@ int main(int argc, char** argv) {
 	
 	return 0;
 }
-
-
   
 /* --------------------
 Finds the minimum-cost path in an AVL tree
@@ -76,23 +74,40 @@ Finds the minimum-cost path in an AVL tree
 */
 int FindMinPath(struct AVLTree *tree, TYPE *path)
 {
+
     /* FIX ME */
 	int s = 0, i = 0;
 	struct AVLnode* current = tree->root, * prev = 0;
 	while(current) {
 		path[i++] = current->val;
-		printf("%i ", current->val);
 		prev = current;
-		if(current->left) current = current->left;
-		else current = current->right;
-		if(prev) s += abs(prev->val - current->val);
+		if(current->left && current->right) {
+			if(slope(current, current->left) < slope(current, current->right)) 
+				current = current->left;
+			else 
+				current = current->right;
+		} else if(current->left) 
+			current = current->left;
+		else 
+			current = current->right;
+		if(current) s += abs(prev->val - current->val);
 	}
+
+	printf("\n%i\n", s);
 	
-	return s;
+	return i;
 
 }
 
+double slope(struct AVLnode* parent, struct AVLnode* child) {
 
+	assert(parent);
+	assert(child);
+	assert(parent->left == child || parent->right == child);
+
+	return (double)abs(parent->val - child->val) / (parent->height - child->height);
+
+}
 
 /* -----------------------
 Printing the contents of an AVL tree in breadth-first fashion
@@ -103,21 +118,25 @@ void printBreadthFirstTree(struct AVLTree *tree)
 {
    
     /* FIX ME */
-	int i, h = tree->root->height;
-	for(i = 0; i < h; i++) {
-		printLevel(tree->root, i);
+	int level = 1;
+	while(printLevel(tree->root, level)) {
+		level++;
 		printf("\n");
 	}
 
 }
 
-void printLevel(struct AVLnode* node, int level) {
+int printLevel(struct AVLnode* node, int level) {
 
-	if(!node) return;
-	if(level == 1) printf("%i ", node->val);
-	else if(level > 1) {
-		printLevel(node->left, level - 1);
-		printLevel(node->right, level - 1);
+	if(!node) return 0;
+	if(level == 1) {
+		printf("%i ", node->val);
+		return 1;
 	}
+
+	int left = printLevel(node->left, level - 1);
+	int right = printLevel(node->right, level - 1);
+
+	return left || right;	
 
 }
