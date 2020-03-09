@@ -1,14 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-/*#include <sys/time.h>*/
+#include <sys/time.h>
 #include "avl.h"
+#include <limits.h>
 
 
 int FindMinPath(struct AVLTree *tree, TYPE *path);
 void printBreadthFirstTree(struct AVLTree *tree);
 int printLevel(struct AVLnode* node, int level);
-double slope(struct AVLnode* parent, struct AVLnode* child);
+void preorder(struct AVLnode* curr, int* minCost, int totalSum, int* length, int* cLength, TYPE* path, TYPE* cPath, TYPE pVal);
 
 /* -----------------------
 The main function
@@ -19,7 +20,7 @@ int main(int argc, char** argv) {
 	FILE *file;
 	int len, i;
 	TYPE num; /* value to add to the tree from a file */
-	/*struct time stop, start;*/ /* variables for measuring execution time */
+	struct timeval stop, start; /* variables for measuring execution time */
 	int pathArray[50];  /* static array with values of nodes along the min-cost path of the AVL tree -- as can be seen, the tree cannot have the depth greater than 50 which is fairly sufficient for out purposes*/
 
 	struct AVLTree *tree;
@@ -30,22 +31,20 @@ int main(int argc, char** argv) {
 	assert(file != 0);
 
 	/* Read input file and add numbers to the AVL tree */
-	while((fscanf(file, "%i", &num)) != EOF){
-		printf("%i ", num);
-		addAVLTree(tree, num);
-	}
+	while((fscanf(file, "%i", &num)) != EOF) addAVLTree(tree, num);
+	
 	/* Close the file  */
 	fclose(file);
 	
 	printf("\nPrinting the tree breadth-first : \n");
 	printBreadthFirstTree(tree);
 
-	/*gettimeofday(&start, NULL);*/
+	gettimeofday(&start, NULL);
 
 	/* Find the minimum-cost path in the AVL tree*/
 	len = FindMinPath(tree, pathArray);
 	
-	/*gettimeofday(&stop, NULL);*/
+	gettimeofday(&stop, NULL);
 
 	/* Print out all numbers on the minimum-cost path */
 	printf("\nThe minimum-cost path is: \n");
@@ -53,7 +52,7 @@ int main(int argc, char** argv) {
 		printf("%d ", pathArray[i]);
 	printf("\n");
 
-	/*printf("\nYour execution time to find the mincost path is %f microseconds\n", (double) (stop.tv_usec - start.tv_usec));*/
+	printf("\nYour execution time to find the mincost path is %f microseconds\n", (double) (stop.tv_usec - start.tv_usec));
 
         /* Free memory allocated to the tree */
 	deleteAVLTree(tree); 
@@ -76,28 +75,58 @@ int FindMinPath(struct AVLTree *tree, TYPE *path)
 {
 
     /* FIX ME */
-	int s = 0, i = 0;
-	struct AVLnode* current = tree->root, * prev = 0;
-	while(current) {
-		path[i++] = current->val;
-		prev = current;
-		if(current->left && current->right) {
-			if(slope(current, current->left) < slope(current, current->right)) 
-				current = current->left;
-			else 
-				current = current->right;
-		} else if(current->left) 
-			current = current->left;
-		else 
-			current = current->right;
-		if(current) s += abs(prev->val - current->val);
-	}
+	struct AVLnode * curr;
+	int length;
+	int minCost;
+	int cLength;
+	TYPE cPath[256];
 
-	printf("\n%i\n", s);
-	
-	return i;
+	curr = tree->root;
+	minCost = INT_MAX;
+	cLength = 0;
+	length = 0;
+	path[length] = tree->root->val;
+	length++;
+
+	if(tree->cnt > 1)
+		preorder(curr, &minCost, 0, &length, &cLength, path, cPath, curr->val);
+
+	return length;
 
 }
+
+void preorder(struct AVLnode* curr, int* minCost, int totalSum, int* length, int* cLength, TYPE* path, TYPE* cPath, TYPE pVal) {
+
+	int i;
+
+	cPath[*cLength] = curr->val;
+	(*cLength)++;
+	if(!LT(pVal, 0))
+		totalSum += abs(pVal - curr->val);
+
+	if(totalSum >= (*minCost)) {
+		(*cLength)--;
+		return;
+	}
+
+	if(curr->left == NULL && curr->right == NULL) {
+		if(LT(totalSum, (*minCost))) {
+			*minCost = totalSum;
+			for(i = 0; i < *cLength; i++)
+				path[i] = cPath[i];
+			*length = *cLength;
+			(*cLength)--;
+		}
+	} else {
+		if(curr->left)
+			preorder(curr->left, minCost, totalSum, length, cLength, path, cPath, curr->val);
+		if(curr->right)
+			preorder(curr->right, minCost, totalSum, length, cLength, path, cPath, curr->val);
+		(*cLength)--;
+	}
+
+}
+
 
 double slope(struct AVLnode* parent, struct AVLnode* child) {
 
@@ -119,14 +148,14 @@ void printBreadthFirstTree(struct AVLTree *tree)
    
     /* FIX ME */
 	int level = 1;
-	while(printLevel(tree->root, level)) {
-		level++;
-		printf("\n");
-	}
+	while(printLevel(tree->root, level)) level++;
+	printf("\n");
 
 }
 
 int printLevel(struct AVLnode* node, int level) {
+
+	int left, right;
 
 	if(!node) return 0;
 	if(level == 1) {
@@ -134,8 +163,8 @@ int printLevel(struct AVLnode* node, int level) {
 		return 1;
 	}
 
-	int left = printLevel(node->left, level - 1);
-	int right = printLevel(node->right, level - 1);
+	left = printLevel(node->left, level - 1);
+	right = printLevel(node->right, level - 1);
 
 	return left || right;	
 
